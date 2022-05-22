@@ -1,3 +1,57 @@
+import sys
+from PyQt5.QtWidgets import *
+
+
+class Window(QMainWindow):
+    """Main Window."""
+
+    def __init__(self, parent=None):
+        """Initializer."""
+        super().__init__(parent)
+        self.exitAction = None
+        self.authorAction = None
+        self.descriptionAction = None
+        self.setWindowTitle("Wypalanie mapy")
+        self.create_menu_bar()
+        self.resize(1200, 800)
+
+    def create_menu_bar(self):
+        self.descriptionAction = QAction("&Opis aplikacji", self)
+        self.descriptionAction.triggered.connect(self.show_description_messagebox)
+        self.authorAction = QAction("&Autor", self)
+        self.authorAction.triggered.connect(self.show_author_messagebox)
+        self.exitAction = QAction("&Wyjście", self)
+        self.exitAction.triggered.connect(lambda action: exit())
+
+        menu_bar = self.menuBar()
+        additional_info = menu_bar.addMenu("&Informacje dodatkowe")
+        additional_info.addAction(self.descriptionAction)
+        additional_info.addAction(self.authorAction)
+        menu_bar.addAction(self.exitAction)
+
+
+    @staticmethod
+    def show_description_messagebox():
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("Gra \"Wypalanie mapy\"\n"
+                    "wykonana na przedmiot "
+                    "\"Języki skryptowe i ich zastosowania\"")
+        msg.setWindowTitle("Opis aplikacji")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
+
+    @staticmethod
+    def show_author_messagebox():
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("Mateusz Nieścier 175778\n"
+                    "semestr 1 mgr KASK")
+        msg.setWindowTitle("Autor")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
+
+
 class Vertex:
     def __init__(self, x, y, possible_vertices_number):
         self.x = x
@@ -65,4 +119,7 @@ if __name__ == "__main__":
     current_level = read_which_level_to_open()
     vertices, edges = read_level_file(current_level)
 
-    print()
+    app = QApplication(sys.argv)
+    win = Window()
+    win.show()
+    sys.exit(app.exec_())
