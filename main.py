@@ -3,21 +3,29 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from structures.level_structure import LevelStructure
+
 
 class Window(QMainWindow):
     def __init__(self, level_structure, parent=None):
         super().__init__(parent)
 
+        self.__width = 1200
+        self.__height = 800
+        self.__button_radius = 25
+        self.__draw_field_x_shift = 10
+        self.__draw_field_y_shift = 30
+        self.__font = 'Calibri'
+
+        self.draw_label = QLabel(self)
         self.reset_game_button = None
         self.continue_game_button = None
         self.level_structure = level_structure
-        self.__width = 1200
-        self.__height = 800
-        self.__font = 'Calibri'
-
         self.exitAction = None
         self.authorAction = None
         self.descriptionAction = None
+        self.map_buttons = []
+
         self.setWindowTitle("Wypalanie mapy")
         self.create_menu_bar()
         self.draw_begin_view()
@@ -52,7 +60,42 @@ class Window(QMainWindow):
         self.continue_game_button.setStyleSheet("border-radius : 100; "
                                                 "border: 2px solid black; "
                                                 "background-color: green;")
-        self.continue_game_button.clicked.connect(self.continue_game_button.deleteLater)
+        self.continue_game_button.clicked.connect(self.draw_game_view)
+
+    def draw_game_view(self):
+        self.continue_game_button.deleteLater()
+        self.reset_game_button.deleteLater()
+
+        self.draw_label.setGeometry(self.__draw_field_x_shift, self.__draw_field_y_shift,
+                                    self.__width * 3 // 5 - 2 * self.__draw_field_x_shift,
+                                    self.__height - 2 * self.__draw_field_y_shift)
+        self.draw_label.setStyleSheet("border :2px solid black;")
+        canvas = QPixmap(self.__width * 3 // 5 - 2 * self.__draw_field_x_shift,
+                         self.__height - 2 * self.__draw_field_y_shift)
+        canvas.fill(QColor("white"))
+        self.draw_label.setPixmap(canvas)
+        painter = QPainter(self.draw_label.pixmap())
+        painter.setPen(QPen(QColor("black"), 3))
+
+        self.level_structure.read_level_file()
+
+        for edge in self.level_structure.edges:
+            painter.drawLine(edge.x1 - self.__draw_field_x_shift + self.__button_radius,
+                             edge.y1 - self.__draw_field_y_shift + self.__button_radius,
+                             edge.x2 - self.__draw_field_x_shift + self.__button_radius,
+                             edge.y2 - self.__draw_field_y_shift + self.__button_radius)
+        painter.end()
+
+        for vertex in self.level_structure.vertices:
+            map_button = QPushButton(str(vertex.value), self)
+            map_button.setFont(QFont(self.__font, 12))
+            map_button.setGeometry(vertex.x, vertex.y, 2 * self.__button_radius, 2 * self.__button_radius)
+            map_button.setStyleSheet("border-radius : {}; "
+                                     "border: 2px solid black; "
+                                     "background-color: Mintcream;"
+                                     .format(self.__button_radius))
+            map_button.show()
+            self.map_buttons.append(map_button)
 
     def serve_reset_button_clicked(self):
         msg = QMessageBox()
@@ -85,80 +128,6 @@ class Window(QMainWindow):
         msg.setWindowTitle("Autor")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
-
-
-class Vertex:
-    def __init__(self, x, y, possible_vertices_number):
-        self.x = x
-        self.y = y
-        self.value = 0
-        self.neighbouring_vertices = [False for _ in range(possible_vertices_number)]
-
-
-class Edge:
-    def __init__(self, x1, y1, x2, y2):
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-
-
-class LevelStructure:
-    def __init__(self):
-        self.vertices = None
-        self.edges = None
-        self.current_level = None
-        self.read_which_level_to_open()
-        self.read_level_file()
-
-    def read_which_level_to_open(self):
-        with open("saves/current_level.txt") as f:
-            lines = f.readlines()
-        if len(lines) < 1:
-            print("error in searching for level")
-            exit(1)
-        self.current_level = int(lines[0].strip())
-
-    def write_new_level_number(self, number=1):
-        f = open("saves/current_level.txt", "w")
-        f.write(str(number))
-        f.close()
-        self.current_level = number
-
-    def read_level_file(self):
-        with open("saves/levels/{}.txt".format(self.current_level)) as f:
-            lines = f.readlines()
-        if len(lines) < 2:
-            print("error in level file")
-            exit(1)
-    
-        self.vertices = []
-        vertices_combined = lines[0].strip().split(";")
-        possible_connections = len(vertices_combined)
-        for vertex_combined in vertices_combined:
-            vertex_split = vertex_combined.strip().split(",")
-            if len(vertex_split) != 2:
-                print("error in level file - bad vertices")
-                exit(1)
-            x, y = int(vertex_split[0]), int(vertex_split[1])
-            self.vertices.append(Vertex(x, y, possible_connections))
-    
-        self.edges = []
-        edges_combined = lines[1].strip().split(";")
-        if len(edges_combined) != possible_connections - 1:
-            print("error in level file - bad edges length")
-            exit(1)
-        for i in range(len(edges_combined)):
-            if len(edges_combined[i]) != possible_connections - 1 - i:
-                print("error in level file - bad edges length")
-                exit(1)
-            begin_value = possible_connections - len(edges_combined[i])
-            for j in range(begin_value, possible_connections):
-                if edges_combined[i][j - begin_value] == '|':
-                    self.edges.append(Edge(self.vertices[i].x, self.vertices[i].y,
-                                           self.vertices[j].x, self.vertices[j].y))
-                    self.vertices[i].neighbouring_vertices[j] = True
-                    self.vertices[j].neighbouring_vertices[i] = True
 
 
 if __name__ == "__main__":
