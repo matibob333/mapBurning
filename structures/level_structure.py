@@ -4,11 +4,10 @@ from .edge import Edge
 
 class LevelStructure:
     def __init__(self):
-        self.vertices = None
-        self.edges = None
+        self.vertices = []
+        self.edges = []
         self.current_level = None
         self.read_which_level_to_open()
-        self.read_level_file()
 
     def read_which_level_to_open(self):
         with open("saves/current_level.txt") as f:
@@ -24,7 +23,7 @@ class LevelStructure:
         f.close()
         self.current_level = number
 
-    def read_level_file(self):
+    def read_level_file(self, window):
         with open("saves/levels/{}.txt".format(self.current_level)) as f:
             lines = f.readlines()
         if len(lines) < 2:
@@ -40,7 +39,7 @@ class LevelStructure:
                 print("error in level file - bad vertices")
                 exit(1)
             x, y = int(vertex_split[0]), int(vertex_split[1])
-            self.vertices.append(Vertex(x, y, possible_connections))
+            self.vertices.append(Vertex(x, y, window))
 
         self.edges = []
         edges_combined = lines[1].strip().split(";")
@@ -56,5 +55,5 @@ class LevelStructure:
                 if edges_combined[i][j - begin_value] == '|':
                     self.edges.append(Edge(self.vertices[i].x, self.vertices[i].y,
                                            self.vertices[j].x, self.vertices[j].y))
-                    self.vertices[i].neighbouring_vertices[j] = True
-                    self.vertices[j].neighbouring_vertices[i] = True
+                    self.vertices[i].neighbouring_vertices.append(self.vertices[j])
+                    self.vertices[j].neighbouring_vertices.append(self.vertices[i])

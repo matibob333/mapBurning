@@ -7,17 +7,17 @@ from structures.level_structure import LevelStructure
 
 
 class Window(QMainWindow):
-    def __init__(self, level_structure, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.__width = 1200
         self.__height = 800
-        self.__button_radius = 25
+        self.button_radius = 25
         self.__draw_field_x_shift = 10
         self.__draw_field_y_shift = 30
         self.__font = 'Calibri'
 
-        self.level_structure = level_structure
+        self.level_structure = LevelStructure()
 
         self.exitAction = QAction(self)
         self.authorAction = QAction(self)
@@ -26,12 +26,21 @@ class Window(QMainWindow):
         self.draw_label = QLabel(self)
         self.reset_game_button = QPushButton(self)
         self.continue_game_button = QPushButton(self)
-        self.map_buttons = []
 
         self.setWindowTitle("Wypalanie mapy")
         self.create_menu_bar()
         self.draw_begin_view()
-        self.resize(self.__width, self.__height)
+        self.setFixedSize(self.__width, self.__height)
+
+    def set_button_stylesheet(self, vertex):
+        if vertex.value == 0:
+            color = "Mintcream"
+        else:
+            color = "Cyan"
+        vertex.button.setStyleSheet("border-radius : {}; "
+                                    "border: 2px solid black; "
+                                    "background-color: {};"
+                                    .format(self.button_radius, color))
 
     def create_menu_bar(self):
         self.descriptionAction.setText("&Opis aplikacji")
@@ -48,10 +57,6 @@ class Window(QMainWindow):
         menu_bar.addAction(self.exitAction)
 
     def draw_begin_view(self):
-        for map_button in self.map_buttons:
-            map_button.deleteLater()
-        self.map_buttons = []
-
         self.reset_game_button.setText("RESETUJ POSTĘP")
         self.reset_game_button.setFont(QFont(self.__font, 15))
         self.reset_game_button.setGeometry(self.__width // 2 - 100, self.__height // 2 + 100, 200, 200)
@@ -71,9 +76,9 @@ class Window(QMainWindow):
     def draw_game_view(self):
         self.continue_game_button.deleteLater()
         self.reset_game_button.deleteLater()
-        for map_button in self.map_buttons:
-            map_button.deleteLater()
-        self.map_buttons = []
+        for vertex in self.level_structure.vertices:
+            vertex.button.deleteLater()
+        self.level_structure.read_level_file(self)
 
         self.draw_label.setGeometry(self.__draw_field_x_shift, self.__draw_field_y_shift,
                                     self.__width * 3 // 5 - 2 * self.__draw_field_x_shift,
@@ -86,25 +91,17 @@ class Window(QMainWindow):
         painter = QPainter(self.draw_label.pixmap())
         painter.setPen(QPen(QColor("black"), 3))
 
-        self.level_structure.read_level_file()
-
         for edge in self.level_structure.edges:
-            painter.drawLine(edge.x1 - self.__draw_field_x_shift + self.__button_radius,
-                             edge.y1 - self.__draw_field_y_shift + self.__button_radius,
-                             edge.x2 - self.__draw_field_x_shift + self.__button_radius,
-                             edge.y2 - self.__draw_field_y_shift + self.__button_radius)
+            painter.drawLine(edge.x1 - self.__draw_field_x_shift + self.button_radius,
+                             edge.y1 - self.__draw_field_y_shift + self.button_radius,
+                             edge.x2 - self.__draw_field_x_shift + self.button_radius,
+                             edge.y2 - self.__draw_field_y_shift + self.button_radius)
         painter.end()
 
         for vertex in self.level_structure.vertices:
-            map_button = QPushButton(str(vertex.value), self)
-            map_button.setFont(QFont(self.__font, 12))
-            map_button.setGeometry(vertex.x, vertex.y, 2 * self.__button_radius, 2 * self.__button_radius)
-            map_button.setStyleSheet("border-radius : {}; "
-                                     "border: 2px solid black; "
-                                     "background-color: Mintcream;"
-                                     .format(self.__button_radius))
-            map_button.show()
-            self.map_buttons.append(map_button)
+            vertex.button.setFont(QFont(self.__font, 12))
+            vertex.button.setGeometry(vertex.x, vertex.y, 2 * self.button_radius, 2 * self.button_radius)
+            vertex.button.show()
 
     def serve_reset_button_clicked(self):
         msg = QMessageBox()
@@ -140,9 +137,7 @@ class Window(QMainWindow):
 
 
 if __name__ == "__main__":
-    level_structure = LevelStructure()
-
     app = QApplication(sys.argv)
-    win = Window(level_structure)
+    win = Window()
     win.show()
     sys.exit(app.exec_())
