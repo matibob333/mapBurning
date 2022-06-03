@@ -23,14 +23,40 @@ class Window(QMainWindow):
         self.authorAction = QAction(self)
         self.descriptionAction = QAction(self)
 
-        self.draw_label = QLabel(self)
         self.reset_game_button = QPushButton(self)
         self.continue_game_button = QPushButton(self)
+        self.reset_game_button.hide()
+        self.continue_game_button.hide()
+
+        self.draw_label = QLabel(self)
+        self.level_title_label = QLabel(self)
+        self.level_value_label = QLabel(self)
+        self.winning_title_label = QLabel(self)
+        self.winning_value_label = QLabel(self)
+        self.losing_title_label = QLabel(self)
+        self.losing_value_label = QLabel(self)
+        self.reset_level_button = QPushButton(self)
+        self.next_level_button = QPushButton(self)
+        self.main_menu_button = QPushButton(self)
+        self.reset_level_button.hide()
+        self.next_level_button.hide()
+        self.main_menu_button.hide()
 
         self.setWindowTitle("Wypalanie mapy")
         self.create_menu_bar()
         self.draw_begin_view()
         self.setFixedSize(self.__width, self.__height)
+
+    def set_reset_button_availability(self):
+        if self.level_structure.current_level <= 1:
+            self.reset_game_button.setEnabled(False)
+            self.reset_game_button.setStyleSheet("border-radius : 100; "
+                                                 "border: 2px solid black; "
+                                                 "background-color: Gainsboro;")
+        else:
+            self.reset_game_button.setStyleSheet("border-radius : 100; "
+                                                 "border: 2px solid black; "
+                                                 "background-color: yellow;")
 
     def set_button_stylesheet(self, vertex):
         if vertex.value == 0:
@@ -62,13 +88,40 @@ class Window(QMainWindow):
         additional_info.addAction(self.authorAction)
         menu_bar.addAction(self.exitAction)
 
+    def clear_before_draw_begin_view(self):
+        self.draw_label.hide()
+        self.level_title_label.hide()
+        self.level_value_label.hide()
+        self.winning_title_label.hide()
+        self.winning_value_label.hide()
+        self.losing_title_label.hide()
+        self.losing_value_label.hide()
+        self.reset_level_button.hide()
+        self.next_level_button.hide()
+        self.main_menu_button.hide()
+
+        self.draw_label = QLabel(self)
+        self.level_title_label = QLabel(self)
+        self.level_value_label = QLabel(self)
+        self.winning_title_label = QLabel(self)
+        self.winning_value_label = QLabel(self)
+        self.losing_title_label = QLabel(self)
+        self.losing_value_label = QLabel(self)
+        self.reset_level_button = QPushButton(self)
+        self.next_level_button = QPushButton(self)
+        self.main_menu_button = QPushButton(self)
+        self.draw_begin_view()
+
     def draw_begin_view(self):
+        self.continue_game_button.show()
+        self.reset_game_button.show()
+
+        for vertex in self.level_structure.vertices:
+            vertex.button.deleteLater()
         self.reset_game_button.setText("RESETUJ POSTĘP")
         self.reset_game_button.setFont(QFont(self.__font, 15))
         self.reset_game_button.setGeometry(self.__width // 2 - 100, self.__height // 2 + 100, 200, 200)
-        self.reset_game_button.setStyleSheet("border-radius : 100; "
-                                             "border: 2px solid black; "
-                                             "background-color: yellow;")
+        self.set_reset_button_availability()
         self.reset_game_button.clicked.connect(self.serve_reset_button_clicked)
 
         self.continue_game_button.setText("GRAJ\nPoziom {}".format(self.level_structure.current_level))
@@ -80,12 +133,67 @@ class Window(QMainWindow):
         self.continue_game_button.clicked.connect(self.draw_game_view)
 
     def draw_game_view(self):
-        self.continue_game_button.deleteLater()
-        self.reset_game_button.deleteLater()
-        for vertex in self.level_structure.vertices:
-            vertex.button.deleteLater()
+        self.continue_game_button.hide()
+        self.reset_game_button.hide()
+        self.continue_game_button = QPushButton(self)
+        self.reset_game_button = QPushButton(self)
         self.level_structure.read_level_file(self)
 
+        self.level_title_label.setText("Poziom")
+        self.level_title_label.setFont(QFont(self.__font, 12))
+        self.level_title_label.move(self.__width * 3 // 5 + 10, 50)
+        self.level_title_label.show()
+
+        self.level_value_label.setText(str(self.level_structure.current_level))
+        self.level_value_label.setFont(QFont(self.__font, 12))
+        self.level_value_label.move(self.__width * 3 // 5 + 300, 50)
+        self.level_value_label.show()
+
+        self.winning_title_label.setText("próg wypalenia")
+        self.winning_title_label.setFont(QFont(self.__font, 12))
+        self.winning_title_label.move(self.__width * 3 // 5 + 10, 70)
+        self.winning_title_label.show()
+
+        self.winning_value_label.setText(str(self.level_structure.winning_score))
+        self.winning_value_label.setFont(QFont(self.__font, 12))
+        self.winning_value_label.move(self.__width * 3 // 5 + 300, 70)
+        self.winning_value_label.show()
+
+        self.losing_title_label.setText("próg przegranej")
+        self.losing_title_label.setFont(QFont(self.__font, 12))
+        self.losing_title_label.move(self.__width * 3 // 5 + 10, 90)
+        self.losing_title_label.show()
+
+        self.losing_value_label.setText(str(self.level_structure.losing_score))
+        self.losing_value_label.setFont(QFont(self.__font, 12))
+        self.losing_value_label.move(self.__width * 3 // 5 + 300, 90)
+        self.losing_value_label.show()
+
+        self.reset_level_button.setText("od nowa")
+        self.reset_level_button.setFont(QFont(self.__font, 12))
+        self.reset_level_button.setGeometry(self.__width * 3 // 5 + 10, 300, 450, 50)
+        self.reset_level_button.setStyleSheet("border: 2px solid black; "
+                                              "background-color: Greenyellow;")
+        self.reset_level_button.clicked.connect(self.level_structure.reset_vertices)
+        self.reset_level_button.show()
+
+        self.next_level_button.setText("kolejny poziom")
+        self.next_level_button.setFont(QFont(self.__font, 12))
+        self.next_level_button.setGeometry(self.__width * 3 // 5 + 10, 400, 450, 50)
+        self.next_level_button.setStyleSheet("border: 2px solid grey; "
+                                             "background-color: Gainsboro;"
+                                             "color: grey")
+        self.next_level_button.show()
+
+        self.main_menu_button.setText("powrót do głównego menu")
+        self.main_menu_button.setFont(QFont(self.__font, 12))
+        self.main_menu_button.setGeometry(self.__width * 3 // 5 + 10, 600, 450, 50)
+        self.main_menu_button.setStyleSheet("border: 2px solid black; "
+                                            "background-color: Greenyellow;")
+        self.main_menu_button.clicked.connect(self.clear_before_draw_begin_view)
+        self.main_menu_button.show()
+
+        self.draw_label.show()
         self.draw_label.setGeometry(self.__draw_field_x_shift, self.__draw_field_y_shift,
                                     self.__width * 3 // 5 - 2 * self.__draw_field_x_shift,
                                     self.__height - 2 * self.__draw_field_y_shift)
@@ -119,6 +227,7 @@ class Window(QMainWindow):
         if return_value == QMessageBox.Ok:
             self.level_structure.write_new_level_number()
             self.continue_game_button.setText("GRAJ\nPoziom {}".format(self.level_structure.current_level))
+            self.set_reset_button_availability()
 
     @staticmethod
     def show_description_messagebox():

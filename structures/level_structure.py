@@ -61,3 +61,7 @@ class LevelStructure:
                                            self.vertices[j].x, self.vertices[j].y))
                     self.vertices[i].neighbouring_vertices.append(self.vertices[j])
                     self.vertices[j].neighbouring_vertices.append(self.vertices[i])
+
+    def reset_vertices(self):
+        for vertex in self.vertices:
+            vertex.reset_value()

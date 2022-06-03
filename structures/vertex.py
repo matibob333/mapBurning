@@ -24,3 +24,7 @@ class Vertex:
             self.window.set_button_stylesheet(vertex)
             vertex.button.setText(str(vertex.value))
 
+    def reset_value(self):
+        self.value = 0
+        self.window.set_button_stylesheet(self)
+        self.button.setText(str(self.value))
