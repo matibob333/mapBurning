@@ -6,7 +6,9 @@ class LevelStructure:
     def __init__(self):
         self.vertices = []
         self.edges = []
-        self.current_level = None
+        self.current_level = 1
+        self.winning_score = 0
+        self.losing_score = 0
         self.read_which_level_to_open()
 
     def read_which_level_to_open(self):
@@ -26,9 +28,11 @@ class LevelStructure:
     def read_level_file(self, window):
         with open("saves/levels/{}.txt".format(self.current_level)) as f:
             lines = f.readlines()
-        if len(lines) < 2:
+        if len(lines) < 4:
             print("error in level file")
             exit(1)
+        self.winning_score = int(lines[2].strip())
+        self.losing_score = int(lines[3].strip())
 
         self.vertices = []
         vertices_combined = lines[0].strip().split(";")

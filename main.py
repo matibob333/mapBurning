@@ -35,8 +35,14 @@ class Window(QMainWindow):
     def set_button_stylesheet(self, vertex):
         if vertex.value == 0:
             color = "Mintcream"
-        else:
+        elif vertex.value < self.level_structure.winning_score:
             color = "Cyan"
+        elif vertex.value == self.level_structure.winning_score:
+            color = "Lime"
+        elif vertex.value < self.level_structure.losing_score:
+            color = "Gold"
+        else:
+            color = "Orangered"
         vertex.button.setStyleSheet("border-radius : {}; "
                                     "border: 2px solid black; "
                                     "background-color: {};"
