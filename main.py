@@ -17,13 +17,15 @@ class Window(QMainWindow):
         self.__draw_field_y_shift = 30
         self.__font = 'Calibri'
 
-        self.draw_label = QLabel(self)
-        self.reset_game_button = None
-        self.continue_game_button = None
         self.level_structure = level_structure
-        self.exitAction = None
-        self.authorAction = None
-        self.descriptionAction = None
+
+        self.exitAction = QAction(self)
+        self.authorAction = QAction(self)
+        self.descriptionAction = QAction(self)
+
+        self.draw_label = QLabel(self)
+        self.reset_game_button = QPushButton(self)
+        self.continue_game_button = QPushButton(self)
         self.map_buttons = []
 
         self.setWindowTitle("Wypalanie mapy")
@@ -32,11 +34,11 @@ class Window(QMainWindow):
         self.resize(self.__width, self.__height)
 
     def create_menu_bar(self):
-        self.descriptionAction = QAction("&Opis aplikacji", self)
+        self.descriptionAction.setText("&Opis aplikacji")
         self.descriptionAction.triggered.connect(self.show_description_messagebox)
-        self.authorAction = QAction("&Autor", self)
+        self.authorAction.setText("&Autor")
         self.authorAction.triggered.connect(self.show_author_messagebox)
-        self.exitAction = QAction("&Wyjście", self)
+        self.exitAction.setText("&Wyjście")
         self.exitAction.triggered.connect(lambda action: exit())
 
         menu_bar = self.menuBar()
@@ -46,7 +48,11 @@ class Window(QMainWindow):
         menu_bar.addAction(self.exitAction)
 
     def draw_begin_view(self):
-        self.reset_game_button = QPushButton("RESETUJ POSTĘP", self)
+        for map_button in self.map_buttons:
+            map_button.deleteLater()
+        self.map_buttons = []
+
+        self.reset_game_button.setText("RESETUJ POSTĘP")
         self.reset_game_button.setFont(QFont(self.__font, 15))
         self.reset_game_button.setGeometry(self.__width // 2 - 100, self.__height // 2 + 100, 200, 200)
         self.reset_game_button.setStyleSheet("border-radius : 100; "
@@ -54,7 +60,7 @@ class Window(QMainWindow):
                                              "background-color: yellow;")
         self.reset_game_button.clicked.connect(self.serve_reset_button_clicked)
 
-        self.continue_game_button = QPushButton("GRAJ\nPoziom {}".format(self.level_structure.current_level), self)
+        self.continue_game_button.setText("GRAJ\nPoziom {}".format(self.level_structure.current_level))
         self.continue_game_button.setFont(QFont(self.__font, 15))
         self.continue_game_button.setGeometry(self.__width // 2 - 100, self.__height // 2 - 300, 200, 200)
         self.continue_game_button.setStyleSheet("border-radius : 100; "
@@ -65,6 +71,9 @@ class Window(QMainWindow):
     def draw_game_view(self):
         self.continue_game_button.deleteLater()
         self.reset_game_button.deleteLater()
+        for map_button in self.map_buttons:
+            map_button.deleteLater()
+        self.map_buttons = []
 
         self.draw_label.setGeometry(self.__draw_field_x_shift, self.__draw_field_y_shift,
                                     self.__width * 3 // 5 - 2 * self.__draw_field_x_shift,
