@@ -19,10 +19,17 @@ class Vertex:
         self.value += 2
         self.window.set_button_stylesheet(self)
         self.button.setText(str(self.value))
+        lose_achieved = False
+        if self.value >= self.window.level_structure.losing_score:
+            lose_achieved = True
         for vertex in self.neighbouring_vertices:
             vertex.value += 1
             self.window.set_button_stylesheet(vertex)
             vertex.button.setText(str(vertex.value))
+            if vertex.value >= self.window.level_structure.losing_score:
+                lose_achieved = True
+        if lose_achieved:
+            self.window.handle_lost()
 
     def reset_value(self):
         self.value = 0

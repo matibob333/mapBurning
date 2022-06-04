@@ -23,6 +23,7 @@ class Window(QMainWindow):
         self.authorAction = QAction(self)
         self.descriptionAction = QAction(self)
 
+        self.background_label = QLabel(self)
         self.reset_game_button = QPushButton(self)
         self.continue_game_button = QPushButton(self)
         self.reset_game_button.hide()
@@ -35,6 +36,7 @@ class Window(QMainWindow):
         self.winning_value_label = QLabel(self)
         self.losing_title_label = QLabel(self)
         self.losing_value_label = QLabel(self)
+        self.info_label = QLabel(self)
         self.reset_level_button = QPushButton(self)
         self.next_level_button = QPushButton(self)
         self.main_menu_button = QPushButton(self)
@@ -51,8 +53,9 @@ class Window(QMainWindow):
         if self.level_structure.current_level <= 1:
             self.reset_game_button.setEnabled(False)
             self.reset_game_button.setStyleSheet("border-radius : 100; "
-                                                 "border: 2px solid black; "
-                                                 "background-color: Gainsboro;")
+                                                 "border: 2px solid grey; "
+                                                 "background-color: Gainsboro;"
+                                                 "color: grey")
         else:
             self.reset_game_button.setStyleSheet("border-radius : 100; "
                                                  "border: 2px solid black; "
@@ -73,6 +76,17 @@ class Window(QMainWindow):
                                     "border: 2px solid black; "
                                     "background-color: {};"
                                     .format(self.button_radius, color))
+
+    def handle_lost(self):
+        self.info_label.setText("Przegrywasz! Kliknij \"od nowa\"")
+        self.info_label.show()
+        for vertex in self.level_structure.vertices:
+            vertex.button.setEnabled(False)
+
+    def reset_level(self):
+        self.info_label.setText("")
+        self.info_label.show()
+        self.level_structure.reset_vertices()
 
     def create_menu_bar(self):
         self.descriptionAction.setText("&Opis aplikacji")
@@ -96,6 +110,7 @@ class Window(QMainWindow):
         self.winning_value_label.hide()
         self.losing_title_label.hide()
         self.losing_value_label.hide()
+        self.info_label.hide()
         self.reset_level_button.hide()
         self.next_level_button.hide()
         self.main_menu_button.hide()
@@ -115,9 +130,14 @@ class Window(QMainWindow):
     def draw_begin_view(self):
         self.continue_game_button.show()
         self.reset_game_button.show()
+        self.background_label.show()
 
         for vertex in self.level_structure.vertices:
             vertex.button.deleteLater()
+
+        self.background_label.setGeometry(10, 30, self.__width - 20, self.__height - 60)
+        self.background_label.setStyleSheet("border: 2px solid black; background-color: white")
+
         self.reset_game_button.setText("RESETUJ POSTĘP")
         self.reset_game_button.setFont(QFont(self.__font, 15))
         self.reset_game_button.setGeometry(self.__width // 2 - 100, self.__height // 2 + 100, 200, 200)
@@ -135,6 +155,7 @@ class Window(QMainWindow):
     def draw_game_view(self):
         self.continue_game_button.hide()
         self.reset_game_button.hide()
+        self.background_label.hide()
         self.continue_game_button = QPushButton(self)
         self.reset_game_button = QPushButton(self)
         self.level_structure.read_level_file(self)
@@ -169,12 +190,16 @@ class Window(QMainWindow):
         self.losing_value_label.move(self.__width * 3 // 5 + 300, 90)
         self.losing_value_label.show()
 
+        self.info_label.setFont(QFont(self.__font, 12))
+        self.info_label.setGeometry(self.__width * 3 // 5 + 10, 110, 450, 50)
+        self.losing_value_label.show()
+
         self.reset_level_button.setText("od nowa")
         self.reset_level_button.setFont(QFont(self.__font, 12))
         self.reset_level_button.setGeometry(self.__width * 3 // 5 + 10, 300, 450, 50)
         self.reset_level_button.setStyleSheet("border: 2px solid black; "
                                               "background-color: Greenyellow;")
-        self.reset_level_button.clicked.connect(self.level_structure.reset_vertices)
+        self.reset_level_button.clicked.connect(self.reset_level)
         self.reset_level_button.show()
 
         self.next_level_button.setText("kolejny poziom")
@@ -183,6 +208,8 @@ class Window(QMainWindow):
         self.next_level_button.setStyleSheet("border: 2px solid grey; "
                                              "background-color: Gainsboro;"
                                              "color: grey")
+        self.next_level_button.clicked.connect(self.clear_before_draw_begin_view)
+        self.next_level_button.setEnabled(False)
         self.next_level_button.show()
 
         self.main_menu_button.setText("powrót do głównego menu")

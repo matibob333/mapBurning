@@ -65,3 +65,4 @@ class LevelStructure:
     def reset_vertices(self):
         for vertex in self.vertices:
             vertex.reset_value()
+            vertex.button.setEnabled(True)
