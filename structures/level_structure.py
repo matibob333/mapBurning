@@ -1,3 +1,5 @@
+from os.path import exists
+
 from .vertex import Vertex
 from .edge import Edge
 
@@ -9,6 +11,7 @@ class LevelStructure:
         self.current_level = 1
         self.winning_score = 0
         self.losing_score = 0
+        self.can_go_to_next_level = False
         self.read_which_level_to_open()
 
     def read_which_level_to_open(self):
@@ -24,6 +27,10 @@ class LevelStructure:
         f.write(str(number))
         f.close()
         self.current_level = number
+
+    @staticmethod
+    def check_level_existence(number):
+        return exists("saves/levels/{}.txt".format(number))
 
     def read_level_file(self, window):
         with open("saves/levels/{}.txt".format(self.current_level)) as f:
@@ -66,3 +73,9 @@ class LevelStructure:
         for vertex in self.vertices:
             vertex.reset_value()
             vertex.button.setEnabled(True)
+
+    def check_if_win_achieved(self):
+        for vertex in self.vertices:
+            if vertex.value < self.winning_score:
+                return False
+        return True

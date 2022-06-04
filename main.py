@@ -10,6 +10,8 @@ class Window(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.end_of_game = False
+
         self.__width = 1200
         self.__height = 800
         self.button_radius = 25
@@ -83,9 +85,24 @@ class Window(QMainWindow):
         for vertex in self.level_structure.vertices:
             vertex.button.setEnabled(False)
 
+    def handle_win(self):
+        for vertex in self.level_structure.vertices:
+            vertex.button.setEnabled(False)
+        self.info_label.setText("Wygrywasz!")
+        self.info_label.show()
+        self.level_structure.can_go_to_next_level = True
+        self.next_level_button.setStyleSheet("border: 2px solid black; "
+                                             "background-color: Greenyellow;")
+        self.next_level_button.setEnabled(True)
+
     def reset_level(self):
         self.info_label.setText("")
         self.info_label.show()
+        self.next_level_button.setStyleSheet("border: 2px solid grey; "
+                                             "background-color: Gainsboro;"
+                                             "color: grey")
+        self.level_structure.can_go_to_next_level = False
+        self.next_level_button.setEnabled(False)
         self.level_structure.reset_vertices()
 
     def create_menu_bar(self):
@@ -102,7 +119,18 @@ class Window(QMainWindow):
         additional_info.addAction(self.authorAction)
         menu_bar.addAction(self.exitAction)
 
-    def clear_before_draw_begin_view(self):
+    def go_to_begin_view(self):
+        self.clear_previous_game_view()
+        self.draw_begin_view()
+
+    def go_to_game_view(self):
+        self.clear_previous_game_view()
+        if self.end_of_game:
+            self.draw_begin_view()
+        else:
+            self.draw_game_view()
+
+    def clear_previous_game_view(self):
         self.draw_label.hide()
         self.level_title_label.hide()
         self.level_value_label.hide()
@@ -125,7 +153,19 @@ class Window(QMainWindow):
         self.reset_level_button = QPushButton(self)
         self.next_level_button = QPushButton(self)
         self.main_menu_button = QPushButton(self)
-        self.draw_begin_view()
+
+        for vertex in self.level_structure.vertices:
+            vertex.button.hide()
+            vertex.button = QPushButton(self)
+
+        if self.level_structure.can_go_to_next_level:
+            next_level = self.level_structure.current_level + 1
+            if self.level_structure.check_level_existence(next_level):
+                self.level_structure.write_new_level_number(next_level)
+                self.continue_game_button.setText("GRAJ\nPoziom {}".format(self.level_structure.current_level))
+            else:
+                self.end_of_game = True
+            self.level_structure.can_go_to_next_level = False
 
     def draw_begin_view(self):
         self.continue_game_button.show()
@@ -151,6 +191,15 @@ class Window(QMainWindow):
                                                 "border: 2px solid black; "
                                                 "background-color: green;")
         self.continue_game_button.clicked.connect(self.draw_game_view)
+
+        if self.end_of_game:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Gratulacje! Przeszedłeś wszystkie dostępne poziomy!")
+            msg.setWindowTitle("Opis aplikacji")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
+            self.end_of_game = False
 
     def draw_game_view(self):
         self.continue_game_button.hide()
@@ -208,7 +257,7 @@ class Window(QMainWindow):
         self.next_level_button.setStyleSheet("border: 2px solid grey; "
                                              "background-color: Gainsboro;"
                                              "color: grey")
-        self.next_level_button.clicked.connect(self.clear_before_draw_begin_view)
+        self.next_level_button.clicked.connect(self.go_to_game_view)
         self.next_level_button.setEnabled(False)
         self.next_level_button.show()
 
@@ -217,7 +266,7 @@ class Window(QMainWindow):
         self.main_menu_button.setGeometry(self.__width * 3 // 5 + 10, 600, 450, 50)
         self.main_menu_button.setStyleSheet("border: 2px solid black; "
                                             "background-color: Greenyellow;")
-        self.main_menu_button.clicked.connect(self.clear_before_draw_begin_view)
+        self.main_menu_button.clicked.connect(self.go_to_begin_view)
         self.main_menu_button.show()
 
         self.draw_label.show()

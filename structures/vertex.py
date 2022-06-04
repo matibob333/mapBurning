@@ -30,6 +30,8 @@ class Vertex:
                 lose_achieved = True
         if lose_achieved:
             self.window.handle_lost()
+        elif self.window.level_structure.check_if_win_achieved():
+            self.window.handle_win()
 
     def reset_value(self):
         self.value = 0
