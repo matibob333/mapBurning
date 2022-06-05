@@ -1,5 +1,3 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
@@ -10,9 +8,9 @@ class Vertex:
         self.value = 0
         self.neighbouring_vertices = []
         self.window = window
-        self.button = QPushButton(window)
+        self.button = QPushButton(self.window)
         self.button.setText(str(self.value))
-        window.set_button_stylesheet(self)
+        self.window.set_button_stylesheet(self)
         self.button.clicked.connect(self.change_value_of_vertices)
 
     def change_value_of_vertices(self):
