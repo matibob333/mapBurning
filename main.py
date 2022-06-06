@@ -195,7 +195,7 @@ class Window(QMainWindow):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
             msg.setText("Gratulacje! Przeszedłeś wszystkie dostępne poziomy!")
-            msg.setWindowTitle("Opis aplikacji")
+            msg.setWindowTitle("Gratulacje!")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec_()
             self.end_of_game = False
